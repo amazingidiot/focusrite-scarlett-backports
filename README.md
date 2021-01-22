@@ -19,6 +19,7 @@ Provided patches:
 * ```opensuse-leap-linux-5.3.18-scarlett-gen3.patch``` - patch for the standard desktop openSUSE Leap 5.3.18 kernel.
 * ```opensuse-leap-linux-5.3.18-scarlett-gen3-rt.patch``` - patch for the realtime (RT) openSUSE Leap 5.3.18 kernel.
 * ```vanilla-linux-5.9.0-scarlettt-gen3.patch``` - patch for the original (vanilla) Linux kernel 5.9.0
+* ```0001-focusrite-fedora.patch``` - Patch for Fedora Kernel 5.10.8-200.focusrite.fc33.x86_64
 
 ## Installation
 
@@ -100,6 +101,47 @@ make install
 ```
 
 This will install kernel modules, initrd and kernel. Additionally, it will add the kernel as a boot option to GRUB configuraton.
+
+### Installation for Fedora
+
+Fedora installation steps are based on https://passthroughpo.st/agesa_fix_fedora/
+
+```bash
+# Install prerequisites
+sudo dnf install -y fedpkg fedora-packager rpmdevtools ncurses-devel pesign
+
+# Create build environment in the current folder. Switch to a directory where you want the kernel to be build
+rpmdev-setuptree
+
+# Get latest fedora kernel version.
+# LANG=C ensures english output on non-english systems
+# dnf info --recent kernel prints infos of the latest kernel package
+# grep Source filters for only the line with the source package
+# cut -f2 -d ':' removes everything except the actual filename, which is the information we need
+KERNEL_SOURCE_PACKAGE = $(LANG=C dnf info --recent kernel | grep Source | cut -f2 -d ':')
+
+# Download the source package
+koji download-build --arch=src $(KERNEL_SOURCE_PACKAGE)
+
+# Extract the source package
+rpm -Uvh $(KERNEL_SOURCE_PACKAGE)
+
+# Download 0001-focusrite-fedora.patch
+curl <Insert URL to github here> > ./rpmbuild/SOURCES/0001-focusrite-fedora.patch
+
+# Set the kernel build ID to focusrite so we know the patch is in this kernel
+sed '/^# define buildid .local/%define buildid .focusrite/g' ./rpmbuild/SPECS/kernel.spec
+
+# Add the patch to the kernel.spec file so that it will be included in the build process
+sed '/^# END OF PATCH DEFINITIONS/i Patch9999: 0001-focusrite-fedora.patch' ./rpmbuild/SPECS/kernel.spec
+
+# Install additional requirements
+sudo dnf builddep ./rpmbuild/SPECS/kernel.spec
+
+# Start compiling
+rpmbuild -bb --without debug --target=x86_64 ./rpmbuild/SPECS/kernel.spec
+
+```
 
 ### Configuring audio module
 
