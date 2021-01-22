@@ -127,7 +127,7 @@ koji download-build --arch=src $(KERNEL_SOURCE_PACKAGE)
 rpm -Uvh $(KERNEL_SOURCE_PACKAGE)
 
 # Download 0001-focusrite-fedora.patch
-curl <Insert URL to github here> > ./rpmbuild/SOURCES/0001-focusrite-fedora.patch
+curl https://raw.githubusercontent.com/amazingidiot/focusrite-scarlett-backports/master/0001-focusrite-fedora.patch > ./rpmbuild/SOURCES/0001-focusrite-fedora.patch
 
 # Set the kernel build ID to focusrite so we know the patch is in this kernel
 sed '/^# define buildid .local/%define buildid .focusrite/g' ./rpmbuild/SPECS/kernel.spec
