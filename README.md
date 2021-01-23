@@ -118,22 +118,22 @@ rpmdev-setuptree
 # dnf info --recent kernel prints infos of the latest kernel package
 # grep Source filters for only the line with the source package
 # cut -f2 -d ':' removes everything except the actual filename, which is the information we need
-KERNEL_SOURCE_PACKAGE = $(LANG=C dnf info --recent kernel | grep Source | cut -f2 -d ':')
+KERNEL_SOURCE_PACKAGE=$(LANG=C dnf info --recent kernel | grep Source | cut -f2 -d ':')
 
 # Download the source package
-koji download-build --arch=src $(KERNEL_SOURCE_PACKAGE)
+koji download-build --arch=src $KERNEL_SOURCE_PACKAGE
 
 # Extract the source package
-rpm -Uvh $(KERNEL_SOURCE_PACKAGE)
+rpm -Uvh $KERNEL_SOURCE_PACKAGE
 
 # Download 0001-focusrite-fedora.patch
 curl https://raw.githubusercontent.com/amazingidiot/focusrite-scarlett-backports/master/0001-focusrite-fedora.patch > ./rpmbuild/SOURCES/0001-focusrite-fedora.patch
 
 # Set the kernel build ID to focusrite so we know the patch is in this kernel
-sed '/^# define buildid .local/%define buildid .focusrite/g' ./rpmbuild/SPECS/kernel.spec
+sed -i 's/^# define buildid .local/%define buildid .focusrite/g' ./rpmbuild/SPECS/kernel.spec
 
 # Add the patch to the kernel.spec file so that it will be included in the build process
-sed '/^# END OF PATCH DEFINITIONS/i Patch9999: 0001-focusrite-fedora.patch' ./rpmbuild/SPECS/kernel.spec
+sed -i '/^# END OF PATCH DEFINITIONS/i Patch9999: 0001-focusrite-fedora.patch' ./rpmbuild/SPECS/kernel.spec
 
 # Install additional requirements
 sudo dnf builddep ./rpmbuild/SPECS/kernel.spec
