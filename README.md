@@ -118,7 +118,7 @@ rpmdev-setuptree
 # dnf info --recent kernel prints infos of the latest kernel package
 # grep Source filters for only the line with the source package
 # cut -f2 -d ':' removes everything except the actual filename, which is the information we need
-KERNEL_SOURCE_PACKAGE=$(LANG=C dnf info --recent kernel.x86_64 | grep Source | cut -f2 -d ':')
+KERNEL_SOURCE_PACKAGE=$(LANG=C dnf info kernel.x86_64 | grep Source | cut -f2 -d ':')
 
 # Download the source package
 koji download-build --arch=src $KERNEL_SOURCE_PACKAGE
